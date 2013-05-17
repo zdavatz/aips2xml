@@ -59,6 +59,13 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -66,7 +73,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities.EscapeMode;
-import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -76,8 +82,13 @@ import com.maxl.java.aips2xml.Preparations.Preparation;
 
 public class Aips2Xml {
 
-	private static final String DB_LANGUAGE = "de";
-	// private static final String DB_LANGUAGE = "fr";	
+	// Set by command line options (default values)
+	private static String DB_LANGUAGE = "";
+	private static boolean SHOW_ERRORS = false;
+	private static boolean SHOW_LOGS = true;
+	private static String VERSION = "1.0.0";
+	private static String MED_TITLE = "";
+
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	private static final String FILE_MEDICAL_INFOS_XML = "./xml/aips_xml.xml";
 	private static final String FILE_MEDICAL_INFOS_XSD = "./xml/aips_xsd.xsd";
@@ -108,65 +119,134 @@ public class Aips2Xml {
 	// Global variables
 	private static String mPackSection_str = "";
 	
+	/**
+	 * Adds an option into the command line parser
+	 * @param optionName - the option name
+	 * @param description - option descriptiuon
+	 * @param hasValue - if set to true, --option=value, otherwise, --option is a boolean
+	 * @param isMandatory - if set to true, the option must be provided.
+	 */
+	@SuppressWarnings("static-access")
+	static void addOption(Options opts, String optionName, String description, boolean hasValue, boolean isMandatory )
+	{
+		OptionBuilder opt = OptionBuilder.withLongOpt(optionName);
+		opt = opt.withDescription(description);
+		if( hasValue ) opt = opt.hasArg();
+		if( isMandatory ) opt = opt.isRequired();
+		opts.addOption(opt.create());
+	}	
+	
+	static void commandLineParse(Options opts, String[] args) {
+		CommandLineParser parser = new GnuParser();
+		try {
+			CommandLine cmd = parser.parse(opts, args);
+			if (cmd.hasOption("help")) {				
+				HelpFormatter formatter = new HelpFormatter();
+				formatter.printHelp("aips2xml", opts);
+			}
+			if (cmd.hasOption("version")) {
+				System.out.println("Version of aips2xml: " + VERSION);
+			}
+			if (cmd.hasOption("lang")) {
+				if (cmd.getOptionValue("lang").equals("de"))
+					DB_LANGUAGE = "de"; 
+				else if (cmd.getOptionValue("lang").equals("fr"))
+					DB_LANGUAGE = "fr";
+			}
+			if (cmd.hasOption("file")) {
+				//
+			}
+			if (cmd.hasOption("verbose"))
+				SHOW_ERRORS = true;
+			if (cmd.hasOption("quiet")) {
+				SHOW_ERRORS = false;
+				SHOW_LOGS = false;
+			}
+			if (cmd.hasOption("zip")) {
+				//
+			}
+			if (cmd.hasOption("alpha")) {
+				MED_TITLE = cmd.getOptionValue("alpha");
+			}
+		} catch(ParseException e) {
+			System.err.println("Parsing failed: " + e.getMessage());
+		}
+	}	
+	
 	public static void main(String[] args) {
+		Options options = new Options();
+		addOption(options, "help", "print this message", false, false );
+		addOption(options, "version", "print the version information and exit", false, false);
+		addOption(options, "quiet", "be extra quiet", false, false);
+		addOption(options, "verbose", "be extra verbose", false, false);
+		addOption(options, "zip", "generate zip file", false, false);
+		addOption(options, "lang", "use given language", true, false);
+		addOption(options, "file", "use given file for log", true, false);
+		addOption(options, "alpha", "only include titles which start with option value", true, false);
+
+		commandLineParse(options, args);
+		
 		DateFormat df = new SimpleDateFormat("ddMMyy");
 		String date_str = df.format(new Date());
-		System.out.println("Begin of Aips2Xml. Today: " + date_str);
-	
-		extractPackageInfo();
-		
-		List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
-		
-		int counter = 0;
-		String fi_complete_xml = "";		
-		for (MedicalInformations.MedicalInformation m : med_list) {
-			if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
-				counter++;
-				// if (m.getTitle().startsWith("Dormicum")) {	// --- uncomment for DEBUG ---	
-					System.out.println(counter + ": " + m.getTitle());			
-					String[] html_str = extractHtmlSection(m);
-					// html_str[0] -> registration numbers
-					// html_str[1] -> content string
-					String xml_str = convertHtmlToXml(m.getTitle(), html_str[1], html_str[0]);
-					if (DB_LANGUAGE.equals("de")) {
-						if (!html_str[0].isEmpty()) {
-							String name = m.getTitle();
-							// Replace all "Sonderzeichen"
-							name = name.replaceAll("[/%:]", "_");
-							writeToFile(html_str[1], "./fis/fi_de_html/" + name + "_fi_de.html");
-							writeToFile(xml_str, "./fis/fi_de_xml/" + name + "_fi_de.xml");
-							fi_complete_xml += (xml_str + "\n");
-						}
-					} else if (DB_LANGUAGE.equals("fr")) {
-						if (!html_str[0].isEmpty()) {
-							String name = m.getTitle();
-							// Replace all "Sonderzeichen"
-							name = name.replaceAll("[/%:]", "_");
-							writeToFile(html_str[1], "./fis/fi_fr_html/" + name + "_fi_fr.html");
-							writeToFile(xml_str, "./fis/fi_fr_xml/" + name + "_fi_fr.xml");
-							fi_complete_xml += (xml_str + "\n");	
+		System.out.println("");
+		if (!DB_LANGUAGE.isEmpty()) {
+			extractPackageInfo();
+			
+			List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
+
+			System.out.println("");
+			int counter = 0;
+			String fi_complete_xml = "";		
+			for (MedicalInformations.MedicalInformation m : med_list) {
+				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
+					counter++;
+					if (m.getTitle().startsWith(MED_TITLE)) {		
+						if (SHOW_LOGS)
+							System.out.println(counter + ": " + m.getTitle());			
+						String[] html_str = extractHtmlSection(m);
+						// html_str[0] -> registration numbers
+						// html_str[1] -> content string
+						String xml_str = convertHtmlToXml(m.getTitle(), html_str[1], html_str[0]);
+						if (DB_LANGUAGE.equals("de")) {
+							if (!html_str[0].isEmpty()) {
+								String name = m.getTitle();
+								// Replace all "Sonderzeichen"
+								name = name.replaceAll("[/%:]", "_");
+								writeToFile(html_str[1], "./fis/fi_de_html/" + name + "_fi_de.html");
+								writeToFile(xml_str, "./fis/fi_de_xml/" + name + "_fi_de.xml");
+								fi_complete_xml += (xml_str + "\n");
+							}
+						} else if (DB_LANGUAGE.equals("fr")) {
+							if (!html_str[0].isEmpty()) {
+								String name = m.getTitle();
+								// Replace all "Sonderzeichen"
+								name = name.replaceAll("[/%:]", "_");
+								writeToFile(html_str[1], "./fis/fi_fr_html/" + name + "_fi_fr.html");
+								writeToFile(xml_str, "./fis/fi_fr_xml/" + name + "_fi_fr.xml");
+								fi_complete_xml += (xml_str + "\n");	
+							}
 						}
 					}
-				//}	// --- uncomment for DEBUG ---
+				}
 			}
+			
+			// Add header to huge xml
+			fi_complete_xml = addHeaderToXml(fi_complete_xml);
+			// Dump to file
+			if (DB_LANGUAGE.equals("de"))
+				writeToFile(fi_complete_xml, "./fis/fi_de.xml");
+			else if (DB_LANGUAGE.equals("fr"))
+				writeToFile(fi_complete_xml, "./fis/fi_fr.xml");
 		}
-		
-		// Add header to huge xml
-		fi_complete_xml = addHeaderToXml(fi_complete_xml);
-		// Dump to file
-		if (DB_LANGUAGE.equals("de"))
-			writeToFile(fi_complete_xml, "./fis/fi_de.xml");
-		else if (DB_LANGUAGE.equals("fr"))
-			writeToFile(fi_complete_xml, "./fis/fi_fr.xml");
-		
-		System.out.println("End of Aips2Xml. Bye bye!");
-		
+				
 		System.exit(0);
 	}
 	
 	static void extractPackageInfo() {		
 		try {			
-			System.out.print("Starting packages XLS parser ... ");			
+			long startTime = System.currentTimeMillis();			
+			if (SHOW_LOGS)
+				System.out.print("- Processing packages xls ... ");
 			// Load Swissmedic xls file
 			FileInputStream packages_file = new FileInputStream(FILE_PACKAGES_XLS);
 			// Get workbook instance for XLS file (HSSF = Horrible SpreadSheet Format)
@@ -244,10 +324,13 @@ public class Aips2Xml {
 				}
 				num_rows++;
 			}
-			System.out.println("done.");				
-			System.out.println("Number of packages: " + (package_info.size()+1));
-
-			System.out.print("Starting atc classes XLS parser ... ");	
+			long stopTime = System.currentTimeMillis();			
+			if (SHOW_LOGS) {
+				System.out.println((package_info.size()+1) + " packages in " + (stopTime-startTime)/1000.0f + " sec");				
+			}
+			startTime = System.currentTimeMillis();
+			if (SHOW_LOGS) 
+				System.out.print("- Processing atc classes xls ... ");	
 			if (DB_LANGUAGE.equals("de")) {
 				// Load ATC classes xls file
 				FileInputStream atc_classes_file = new FileInputStream(FILE_ATC_CLASSES_XLS);
@@ -292,9 +375,9 @@ public class Aips2Xml {
 				}
 				scanner.close();
 			}
-			System.out.println("done.");				
-			System.out.println("Number of atc classes: " + (atc_map.size()+1));			
-			
+			stopTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.println((atc_map.size()+1) + " classes in " + (stopTime-startTime)/1000.0f + " sec");			
 			// Load Refdata xml file
 			File refdata_xml_file = null;
 			if (DB_LANGUAGE.equals("de"))
@@ -307,7 +390,9 @@ public class Aips2Xml {
 			}
 			FileInputStream refdata_fis = new FileInputStream(refdata_xml_file);
 			
-			System.out.println("Unmarshalling Refdata Pharma " + DB_LANGUAGE + " XML ... ");
+			startTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.print("- Unmarshalling Refdata Pharma " + DB_LANGUAGE + " ... ");
 			
 			JAXBContext context = JAXBContext.newInstance(Pharma.class);			
 			Unmarshaller um = context.createUnmarshaller();			
@@ -334,23 +419,31 @@ public class Aips2Xml {
 								pi_row.set(10, "p.c.");
 						}
 					} else {
-						System.err.println(">> Does not exist in BAG xls: " + smno8 + " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
+						if (SHOW_ERRORS)
+							System.err.println(">> Does not exist in BAG xls: " + smno8 + " (" + pharma.getDscr() + ", " + pharma.getAddscr() + ")");
 					}
 						
 				} 
 				else if (ean_code.length()<13 ) {
-					System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getDscr());
+					if (SHOW_ERRORS)
+						System.err.println(">> EAN code too short: " + ean_code + ": " + pharma.getDscr());
 				} else if (ean_code.length()>13 ) {
-					System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getDscr());
+					if (SHOW_ERRORS)
+						System.err.println(">> EAN code too long: " + ean_code + ": " + pharma.getDscr());
 				}
 			}
 			
+			stopTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.println(pharma_list.size() + " medis in " + (stopTime-startTime)/1000.0f + " sec");
 			
 			// Load BAG xml file					
 			File bag_xml_file = new File(FILE_PREPARATIONS_XML);
 			FileInputStream fis_bag = new FileInputStream(bag_xml_file);
 
-			System.out.println("Unmarshalling BAG XML file ... ");
+			startTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.print("- Processing preparations xml ... ");
 			
 			context = JAXBContext.newInstance(Preparations.class);			
 			um = context.createUnmarshaller();			
@@ -442,7 +535,8 @@ public class Aips2Xml {
 										String ep = String.format("%.2f", f);
 										pi_row.set(8, "CHF " + ep);
 									} catch (NumberFormatException e) {
-										System.err.println("Number format exception (exfactory price): " + swissMedicNo8 + " (" + public_price.size() + ")");
+										if (SHOW_ERRORS)
+											System.err.println("Number format exception (exfactory price): " + swissMedicNo8 + " (" + public_price.size() + ")");
 									}
 									
 								}
@@ -456,7 +550,8 @@ public class Aips2Xml {
 										else if (DB_LANGUAGE.equals("fr"))
 											pi_row.set(11, ", LS");
 									} catch (NumberFormatException e) {
-										System.err.println("Number format exception (public price): " + swissMedicNo8 + " (" + public_price.size() + ")");
+										if (SHOW_ERRORS)
+											System.err.println("Number format exception (public price): " + swissMedicNo8 + " (" + public_price.size() + ")");
 									}
 								} 							
 								// Add application area and therapeutic code
@@ -470,28 +565,15 @@ public class Aips2Xml {
 				num_preparations++;
 			}
 
-			System.out.println("Marshalled BAG XML file and merged XLS info.");						
+			stopTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.println(num_preparations + " preparations in " + (stopTime-startTime)/1000.0f + " sec");					
 			
 			// Loop through all SwissmedicNo8 numbers
 			for (Map.Entry<String, ArrayList<String>> entry : package_info.entrySet()) {
 				String swissmedicno8 = entry.getKey();
 				ArrayList<String> pi_row = entry.getValue();
-				if (pi_row!=null) {
-					/*
-					String pinfo_str = swissmedicno8 + " - " + pi_row.get(1) + ", " + pi_row.get(3) + " "
-							+ pi_row.get(4) + ", " + pi_row.get(7) + " (" + pi_row.get(5) + ")";
-					System.out.println(pinfo_str);
-					*/
-					// Therapy Index
-					/* 
-					System.out.println(">> " + pi_row.get(9));					
-					System.out.println(">> " + pi_row.get(6));
-					*/
-				}
 			}
-			System.out.println("");
-			System.out.println("Tot. num. of preparations        : " + (package_info.size()+1));
-			System.out.println("Tot. num. of preparations w price: " + num_preparations);
 			
 		} catch (FileNotFoundException e) {
 		    e.printStackTrace();
@@ -514,20 +596,25 @@ public class Aips2Xml {
 			validator.setErrorHandler( new MyErrorHandler() );
 			
 			// Marshaller
+			/*
 			Marshaller ma = context.createMarshaller();
 			ma.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 			MedicalInformations medi_infos = new MedicalInformations();
 			ma.marshal(medi_infos, System.out);
-
-			// Unmarshaller			
-			System.out.println("Unmarshalling Swissmedic XML file ...");
+			*/
+			// Unmarshaller	
+			long startTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.print("- Unmarshalling Swissmedic xml ... ");
 			
 			FileInputStream fis = new FileInputStream(new File(FILE_MEDICAL_INFOS_XML));			
 			Unmarshaller um = context.createUnmarshaller();			
 			MedicalInformations med_infos = (MedicalInformations) um.unmarshal(fis);
 			med_list = med_infos.getMedicalInformation();
-
-			System.out.println("Unmarshalling Swissmedic XML file done.");			
+			
+			long stopTime = System.currentTimeMillis();
+			if (SHOW_LOGS)
+				System.out.println(med_list.size() + " medis in " + (stopTime-startTime)/1000.0f + " sec");			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (JAXBException e) {
@@ -698,7 +785,8 @@ public class Aips2Xml {
 			if (div18!=null) {
 				div18.html("<div class=\"absTitle\">Packungen</div>" + p_str);
 			} else {
-				System.err.println(">> ERROR: elem is null, sections 18/7800 does not exist: " + title);
+				if (SHOW_ERRORS)
+					System.err.println(">> ERROR: elem is null, sections 18/7800 does not exist: " + title);
 			}
 		}		
 		
@@ -718,7 +806,8 @@ public class Aips2Xml {
 		// Beautify the title to the best of my possibilities ... still not good enough!
 		String title_str = mDoc.select("title").text().trim().replaceAll("<br />","").replaceAll("(\\t|\\r?\\n)+","");
 		if (!title_str.equals(med_title))
-			System.err.println(med_title + " differs from " + title_str);
+			if (SHOW_ERRORS)
+				System.err.println(med_title + " differs from " + title_str);
 		// Fallback solution: use title from the header AIPS.xml file - the titles look all pretty good!
 		mDoc.select("title").first().text(med_title);
 		// <div class="ownerCompany"> -> <owner>
