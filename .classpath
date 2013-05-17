@@ -2,8 +2,9 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="E:/Projects/Android/workspace/XmlGen/libs/jsoup-1.7.2.jar"/>
-	<classpathentry kind="lib" path="E:/Projects/Android/workspace/XmlGen/libs/poi-3.9-20121203.jar"/>
-	<classpathentry kind="lib" path="E:/Projects/Android/workspace/XmlGen/libs/poi-scratchpad-3.9-20121203.jar"/>
+	<classpathentry kind="lib" path="libs/jsoup-1.7.2.jar"/>
+	<classpathentry kind="lib" path="libs/poi-3.9-20121203.jar"/>
+	<classpathentry kind="lib" path="libs/poi-scratchpad-3.9-20121203.jar"/>
+	<classpathentry kind="lib" path="libs/commons-cli-1.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
