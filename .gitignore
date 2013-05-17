@@ -25,9 +25,8 @@
 *.xsd
 *.html
 
-# xls, txt	     #
+# xls			     #
 ######################
-*.txt
 *.xls
 
 # Logs and databases #

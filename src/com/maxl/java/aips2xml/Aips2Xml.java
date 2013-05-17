@@ -127,12 +127,13 @@ public class Aips2Xml {
 	 * @param isMandatory - if set to true, the option must be provided.
 	 */
 	@SuppressWarnings("static-access")
-	static void addOption(Options opts, String optionName, String description, boolean hasValue, boolean isMandatory )
-	{
+	static void addOption(Options opts, String optionName, String description, boolean hasValue, boolean isMandatory) {
 		OptionBuilder opt = OptionBuilder.withLongOpt(optionName);
 		opt = opt.withDescription(description);
-		if( hasValue ) opt = opt.hasArg();
-		if( isMandatory ) opt = opt.isRequired();
+		if (hasValue) 
+			opt = opt.hasArg();
+		if(isMandatory) 
+			opt = opt.isRequired();
 		opts.addOption(opt.create());
 	}	
 	
@@ -186,8 +187,13 @@ public class Aips2Xml {
 
 		commandLineParse(options, args);
 		
+		System.out.println("");
+		// Download all files and save them in appropriate directories
+		allDown();		
+		
 		DateFormat df = new SimpleDateFormat("ddMMyy");
 		String date_str = df.format(new Date());
+
 		System.out.println("");
 		if (!DB_LANGUAGE.isEmpty()) {
 			extractPackageInfo();
@@ -240,6 +246,16 @@ public class Aips2Xml {
 		}
 				
 		System.exit(0);
+	}
+	
+	static void allDown() {
+		AllDown a = new AllDown();
+		
+		a.downAipsXls(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML);
+		a.downPackungenXls(FILE_PACKAGES_XLS);
+		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
+		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
+		a.downPreparationsXml(FILE_PREPARATIONS_XML);
 	}
 	
 	static void extractPackageInfo() {		
