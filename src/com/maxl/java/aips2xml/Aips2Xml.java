@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -88,6 +90,7 @@ public class Aips2Xml {
 	private static String VERSION = "1.0.0";
 	private static String MED_TITLE = "";
 	private static boolean DOWNLOAD_ALL = true;
+	private static boolean ZIP_XML = false;
 
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	private static final String FILE_MEDICAL_INFOS_XML = "./xml/aips_xml.xml";
@@ -155,9 +158,6 @@ public class Aips2Xml {
 				else if (cmd.getOptionValue("lang").equals("fr"))
 					DB_LANGUAGE = "fr";
 			}
-			if (cmd.hasOption("file")) {
-				//
-			}
 			if (cmd.hasOption("verbose"))
 				SHOW_ERRORS = true;
 			if (cmd.hasOption("quiet")) {
@@ -165,7 +165,7 @@ public class Aips2Xml {
 				SHOW_LOGS = false;
 			}
 			if (cmd.hasOption("zip")) {
-				//
+				ZIP_XML = true;
 			}
 			if (cmd.hasOption("alpha")) {
 				MED_TITLE = cmd.getOptionValue("alpha");
@@ -186,7 +186,6 @@ public class Aips2Xml {
 		addOption(options, "verbose", "be extra verbose", false, false);
 		addOption(options, "zip", "generate zip file", false, false);
 		addOption(options, "lang", "use given language", true, false);
-		addOption(options, "file", "use given file for log", true, false);
 		addOption(options, "alpha", "only include titles which start with option value", true, false);
 		addOption(options, "nodown", "no download, parse only", false, false);
 
@@ -249,10 +248,16 @@ public class Aips2Xml {
 			// Add header to huge xml
 			fi_complete_xml = addHeaderToXml(fi_complete_xml);
 			// Dump to file
-			if (DB_LANGUAGE.equals("de"))
+			if (DB_LANGUAGE.equals("de")) {
 				writeToFile(fi_complete_xml, "./fis/", "fi_de.xml");
-			else if (DB_LANGUAGE.equals("fr"))
+				if (ZIP_XML)
+					zipToFile("./fis/", "fi_de.xml");
+			}
+			else if (DB_LANGUAGE.equals("fr")) {
 				writeToFile(fi_complete_xml, "./fis/", "fi_fr.xml");
+				if (ZIP_XML)
+					zipToFile("./fis/", "fi_fr.xml");				
+			}
 			
 			if (SHOW_LOGS) {
 				long stopTime = System.currentTimeMillis();
@@ -687,7 +692,7 @@ public class Aips2Xml {
 		} else {
 			html_sanitized = m.getContent();
 		}
-
+		
 		// Update "Packungen" section and extract therapeutisches index
 		List<String> mTyIndex_list = new ArrayList<String>();						
 		String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
@@ -1065,6 +1070,36 @@ public class Aips2Xml {
 			e.printStackTrace();
  		}		
 	}	
+	
+	static void zipToFile(String dir_name, String file_name) {
+		byte[] buffer = new byte[1024];
+		
+		try {
+			FileOutputStream fos = new FileOutputStream(dir_name + changeExtension(file_name, "zip"));
+			ZipOutputStream zos = new ZipOutputStream(fos);
+			ZipEntry ze = new ZipEntry(file_name);
+			zos.putNextEntry(ze);
+			FileInputStream in = new FileInputStream(dir_name + file_name);
+
+			int len = 0;
+			while ((len = in.read(buffer)) > 0) {
+				zos.write(buffer, 0, len);
+			}
+			in.close();
+			zos.closeEntry();
+			zos.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	static String changeExtension(String orig_name, String new_extension) {
+		int last_dot = orig_name.lastIndexOf(".");
+		if (last_dot!=-1)
+			return orig_name.substring(0, last_dot) + "." + new_extension;
+		else
+			return orig_name + "." + new_extension;
+	}
 	
 	static class MyErrorHandler implements ErrorHandler {
 		

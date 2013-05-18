@@ -36,13 +36,13 @@ public class HtmlUtils {
 	private Document mDoc;
 	
 	static private String ListOfKeywordsDE[] = {"Wirkstoffe","Wirkstoff\\(e\\)","Wirkstoff","Hilfsstoffe","Hilfsstoff\\(e\\)","Hilfsstoff",
-		"Kindern","Kinder","Sonstige Hinweise","Hinweis","Lagerungshinweise","Erwachsene","ATC-Code","Inkompatibilitäten","Haltbarkeit",
-		"Ältere Patienten","Schwangerschaft","Stillzeit","Jugendliche","Jugendlichen"};
+		"Kindern","Kinder","Sonstige Hinweise","Hinweis","Lagerungshinweise","Erwachsene","ATC-Code","InkompatibilitÃ¤ten","Haltbarkeit",
+		"ï¿½ltere Patienten","Schwangerschaft","Stillzeit","Jugendliche","Jugendlichen"};
 
 	static private String ListOfKeywordsFR[] = {"Principe actif","Excipient","Excipients",
-		"Enfant","Enfants","Adolescents","Adultes","Posologie usuelle","Remarques particulières", "Remarques concernant la manipulation",
-		"Remarques concernant le stockage","Conseils d'utilisation","Code ATC","Incompatibilités","Stabilité",
-		"Conservation","Patients âgés","Grossesse","Allaitement","Population spéciales","Absorption","Distribution","Métabolisme",
+		"Enfant","Enfants","Adolescents","Adultes","Posologie usuelle","Remarques particuliÃ¨res", "Remarques concernant la manipulation",
+		"Remarques concernant le stockage","Conseils d'utilisation","Code ATC","IncompatibilitÃ©s","StabilitÃ©",
+		"Conservation","Patients ï¿½gï¿½s","Grossesse","Allaitement","Population spÃ©ciales","Absorption","Distribution","MÃ©tabolisme",
 		"Elimination"};
 	
 	public HtmlUtils(String htmlStr) {
@@ -86,6 +86,7 @@ public class HtmlUtils {
 					h = h + pe.toString() + " ";
 					pe = pe.nextElementSibling();
 				}
+
 				/* Seemingly less power solution (17/04/2013)
 				Elements elems = mDoc.select("p:contains(Swissmedic)");
 				for (Element e : elems) {
@@ -101,10 +102,10 @@ public class HtmlUtils {
 					// Remove all parenthesized stuff, e.g. Vistagan ... !
 					h = h.replaceAll("\\(.*?\\)","");
 					// Special character found in some files							
-					h = h.replaceAll("[–-]",",");					
+					h = h.replaceAll("[ï¿½-]",",");					
 					h = h.replaceAll("&apos;", "");
-					h = h.replaceAll("‘", "");
-					h = h.replaceAll("’", "");	
+					h = h.replaceAll("ï¿½", "");
+					h = h.replaceAll("ï¿½", "");	
 					h = h.replaceAll("`", "");						
 					Matcher m = d5_pattern.matcher(h);
 					h = "";
@@ -115,17 +116,17 @@ public class HtmlUtils {
 					if (regnr_str.length()>0)
 						regnr_str = regnr_str.substring(0, regnr_str.length()-1);
 				}									
-				
+
 				if (h.isEmpty()) {
-					elem_first = elem_first.nextElementSibling();		
-					while (h.isEmpty()) {				
+					while (h.isEmpty()) {
+						elem_first = elem_first.nextElementSibling();
 						h = elem_first.toString();
 						h = h.replaceAll("\\<p.*?\\>", "");
 						h = h.replaceAll("<\\/p\\>", "");
 						// Remove all parenthesized stuff, e.g. Vistagan ... !
 						h = h.replaceAll("\\(.+\\)","");
 						// Special character found in some files
-						h = h.replaceAll("[–-]",",");											
+						h = h.replaceAll("[ï¿½-]",",");											
 						h = h.replaceAll("&apos;", "");
 						// Keep numbers and possible separators between numbers
 						h = h.replaceAll("[^;0-9,]", "");
@@ -145,10 +146,10 @@ public class HtmlUtils {
 					// Remove all parenthesized stuff, e.g. Vistagan ... !
 					a = a.replaceAll("\\(.*?\\)","");
 					// Special character found in some files		
-					a = a.replaceAll("[–-]",",");										
+					a = a.replaceAll("[ï¿½-]",",");										
 					a = a.replaceAll("&apos;", "");
-					a = a.replaceAll("‘", "");
-					a = a.replaceAll("’", "");
+					a = a.replaceAll("ï¿½", "");
+					a = a.replaceAll("ï¿½", "");
 					h = h.replaceAll("`", "");											
 					if (start_elem==stop_elem) {
 						Matcher m = d5_pattern.matcher(a);
@@ -180,7 +181,7 @@ public class HtmlUtils {
 		// Get rid of all "(Swissmedic)." instances
 		regnr_str = regnr_str.replaceAll("\\(Swissmedic\\).","");
 		// This is a special - character ...
-		regnr_str = regnr_str.replaceAll("[–-]",",");
+		regnr_str = regnr_str.replaceAll("[ï¿½-]",",");
 		// Remove all parenthesized stuff, e.g. Vistagan ... !
 		regnr_str = regnr_str.replaceAll("\\(.+\\)","");
 		// Replace all semicolons with commas
@@ -237,15 +238,15 @@ public class HtmlUtils {
 					h = h.replaceAll("\\<p.*?\\>", "");
 					h = h.replaceAll("<\\/p\\>", "");					
 					// Remove anything after "Packungen"
-					h = h.replaceAll("(?<=Présentation).*", "");
+					h = h.replaceAll("(?<=Prï¿½sentation).*", "");
 					// Remove all parenthesized stuff, e.g. Vistagan ... !
 					h = h.replaceAll("\\(.*?\\)","");
 					// Special character found in some files							
 					h = h.replaceAll("&apos;", "");
 					// This is a special - character ...
-					h = h.replaceAll("[–-]",",");					
-					h = h.replaceAll("‘", "");
-					h = h.replaceAll("’", "");	
+					h = h.replaceAll("[ï¿½-]",",");					
+					h = h.replaceAll("ï¿½", "");
+					h = h.replaceAll("ï¿½", "");	
 					h = h.replaceAll("`", "");		
 					Matcher m = d5_pattern.matcher(h);
 					h = "";
@@ -264,7 +265,7 @@ public class HtmlUtils {
 						h = h.replaceAll("\\<p.*?\\>", "");
 						h = h.replaceAll("<\\/p\\>", "");
 						// This is a special - character ...
-						regnr_str = regnr_str.replaceAll("[–-]",",");											
+						regnr_str = regnr_str.replaceAll("[ï¿½-]",",");											
 						// Remove all parenthesized stuff, e.g. Vistagan ... !
 						h = h.replaceAll("\\(.+\\)","");
 						// Special character found in some files
@@ -276,24 +277,24 @@ public class HtmlUtils {
 				}
 			} else {
 				// Find "Packungen" und "Zulassungsnummer"
-				Element start_elem = mDoc.select("p:contains(Numéro d’autorisation)").first();			
+				Element start_elem = mDoc.select("p:contains(Numï¿½ro dï¿½autorisation)").first();			
 				String h = "";
 				if (start_elem!=null) {
 					h = "";
 					// Parse everything until "Swissmedic";
-					String a = start_elem.toString().replaceAll("(?<=Présentation).*", "");
+					String a = start_elem.toString().replaceAll("(?<=Prï¿½sentation).*", "");
 					a = a.replaceAll("\\<table.*?\\>", "");
 					a = a.replaceAll("<\\/table\\>", "");	
 					// Remove all parenthesized stuff, e.g. Vistagan ... !
 					a = a.replaceAll("\\(.*?\\)","");
 					// Special character found in some files							
-					a = a.replaceAll("[–-]",",");					
+					a = a.replaceAll("[ï¿½-]",",");					
 					a = a.replaceAll("&apos;", "");
-					a = a.replaceAll("‘", "");
-					a = a.replaceAll("’", "");
+					a = a.replaceAll("ï¿½", "");
+					a = a.replaceAll("ï¿½", "");
 					a = a.replaceAll("`", "");
 					
-					Element stop_elem = mDoc.select("p:contains(Présentation)").first();						
+					Element stop_elem = mDoc.select("p:contains(Prï¿½sentation)").first();						
 					if (start_elem==stop_elem) {
 						Matcher m = d5_pattern.matcher(a);
 						while (m.find())
@@ -326,7 +327,7 @@ public class HtmlUtils {
 		// Get rid of all "(Swissmedic)." instances
 		regnr_str = regnr_str.replaceAll("\\(Swissmedic\\).","");
 		// This is a special - character ...
-		regnr_str = regnr_str.replaceAll("[–-]",",");
+		regnr_str = regnr_str.replaceAll("[ï¿½-]",",");
 		// Remove all parenthesized stuff, e.g. Vistagan ... !
 		regnr_str = regnr_str.replaceAll("\\(.+\\)","");
 		// Replace all semicolons with commas
@@ -454,16 +455,16 @@ public class HtmlUtils {
 			String clean_title = title.text();
 			// Some German medications have wrong characters in the titles, this is a fix
 			if (language.equals("de"))
-				clean_title = med_title; // clean_title.replace("â","®");
+				clean_title = med_title; // clean_title.replace("ï¿½","ï¿½");
 			else if (language.equals("fr"))
-				// clean_title = title.html().replace("<sup class=(.*?)>â</sup>", "®");
+				// clean_title = title.html().replace("<sup class=(.*?)>ï¿½</sup>", "ï¿½");
 				clean_title = med_title;
 			newDoc.html("<div class=\"MonTitle\" id=\"section"+sectionX+"\">"+clean_title+"</div>");
 			Element elem = null;
 			if (language.equals("de"))
 				elem = mDoc.select("p:contains(Zulassungsinhaberin)").first();
 			else if (language.equals("fr"))
-				elem = mDoc.select("p:contains(Titulaire de l’autorisation)").first();	
+				elem = mDoc.select("p:contains(Titulaire de lï¿½autorisation)").first();	
 			if (elem!=null) {
 				if (elem.nextElementSibling()!=null) {
 					List<String> company_str = Arrays.asList(elem.nextElementSibling().text().split("\\s*,\\s*"));
@@ -475,8 +476,8 @@ public class HtmlUtils {
 				
 		// Fools the jsoup-parser
 		String html_str = newDoc.html().replaceAll("&lt; ", "&lt;");
-		// Replaces all supscripted â in the main text with ®
-		html_str = html_str.replaceAll(">â</sup>", ">®</sup>");
+		// Replaces all supscripted ï¿½ in the main text with ï¿½
+		html_str = html_str.replaceAll(">ï¿½</sup>", ">ï¿½</sup>");
 		
 		return html_str;
 	}
