@@ -47,7 +47,6 @@ import java.util.TreeMap;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -88,6 +87,7 @@ public class Aips2Xml {
 	private static boolean SHOW_LOGS = true;
 	private static String VERSION = "1.0.0";
 	private static String MED_TITLE = "";
+	private static boolean DOWNLOAD_ALL = true;
 
 	// XML and XSD files to be parsed (contains DE and FR -> needs to be extracted)
 	private static final String FILE_MEDICAL_INFOS_XML = "./xml/aips_xml.xml";
@@ -169,6 +169,9 @@ public class Aips2Xml {
 			if (cmd.hasOption("alpha")) {
 				MED_TITLE = cmd.getOptionValue("alpha");
 			}
+			if (cmd.hasOption("nodown")) {
+				DOWNLOAD_ALL = false;
+			}
 		} catch(ParseException e) {
 			System.err.println("Parsing failed: " + e.getMessage());
 		}
@@ -184,12 +187,15 @@ public class Aips2Xml {
 		addOption(options, "lang", "use given language", true, false);
 		addOption(options, "file", "use given file for log", true, false);
 		addOption(options, "alpha", "only include titles which start with option value", true, false);
+		addOption(options, "nodown", "no download, parse only", false, false);
 
 		commandLineParse(options, args);
 		
-		System.out.println("");
 		// Download all files and save them in appropriate directories
-		allDown();		
+		if (DOWNLOAD_ALL) {
+			System.out.println("");
+			allDown();		
+		}
 		
 		DateFormat df = new SimpleDateFormat("ddMMyy");
 		String date_str = df.format(new Date());
@@ -200,15 +206,18 @@ public class Aips2Xml {
 			
 			List<MedicalInformations.MedicalInformation> med_list = readAipsFile();
 
-			System.out.println("");
+			if (SHOW_LOGS) {
+				System.out.println("");
+				System.out.println("- Generating xml and html files ... ");
+			}
+			long startTime = System.currentTimeMillis();
 			int counter = 0;
 			String fi_complete_xml = "";		
 			for (MedicalInformations.MedicalInformation m : med_list) {
 				if( m.getLang().equals(DB_LANGUAGE) && m.getType().equals("fi") ) {
-					counter++;
 					if (m.getTitle().startsWith(MED_TITLE)) {		
 						if (SHOW_LOGS)
-							System.out.println(counter + ": " + m.getTitle());			
+							System.out.println(++counter + ": " + m.getTitle());			
 						String[] html_str = extractHtmlSection(m);
 						// html_str[0] -> registration numbers
 						// html_str[1] -> content string
@@ -218,8 +227,8 @@ public class Aips2Xml {
 								String name = m.getTitle();
 								// Replace all "Sonderzeichen"
 								name = name.replaceAll("[/%:]", "_");
-								writeToFile(html_str[1], "./fis/fi_de_html/" + name + "_fi_de.html");
-								writeToFile(xml_str, "./fis/fi_de_xml/" + name + "_fi_de.xml");
+								writeToFile(html_str[1], "./fis/fi_de_html/", name + "_fi_de.html");
+								writeToFile(xml_str, "./fis/fi_de_xml/", name + "_fi_de.xml");
 								fi_complete_xml += (xml_str + "\n");
 							}
 						} else if (DB_LANGUAGE.equals("fr")) {
@@ -227,8 +236,8 @@ public class Aips2Xml {
 								String name = m.getTitle();
 								// Replace all "Sonderzeichen"
 								name = name.replaceAll("[/%:]", "_");
-								writeToFile(html_str[1], "./fis/fi_fr_html/" + name + "_fi_fr.html");
-								writeToFile(xml_str, "./fis/fi_fr_xml/" + name + "_fi_fr.xml");
+								writeToFile(html_str[1], "./fis/fi_fr_html/", name + "_fi_fr.html");
+								writeToFile(xml_str, "./fis/fi_fr_xml/", name + "_fi_fr.xml");
 								fi_complete_xml += (xml_str + "\n");	
 							}
 						}
@@ -240,9 +249,14 @@ public class Aips2Xml {
 			fi_complete_xml = addHeaderToXml(fi_complete_xml);
 			// Dump to file
 			if (DB_LANGUAGE.equals("de"))
-				writeToFile(fi_complete_xml, "./fis/fi_de.xml");
+				writeToFile(fi_complete_xml, "./fis/", "fi_de.xml");
 			else if (DB_LANGUAGE.equals("fr"))
-				writeToFile(fi_complete_xml, "./fis/fi_fr.xml");
+				writeToFile(fi_complete_xml, "./fis/", "fi_fr.xml");
+			
+			if (SHOW_LOGS) {
+				long stopTime = System.currentTimeMillis();
+				System.out.println("- Generated " + counter + " xml and html files in " + (stopTime-startTime)/1000.0f + " sec");
+			}
 		}
 				
 		System.exit(0);
@@ -294,8 +308,8 @@ public class Aips2Xml {
 					String add_info_str = "";	// Contains additional information separated by ;
 					
 					// 0: Zulassungsnnr, 1: Sequenz, 2: Sequenzname, 3: Zulassunginhaberin, 4: T-Nummer, 5: ATC-Code, 6: Heilmittelcode
-					// 7: Erstzulassung Präparat, 8: Zulassungsdatum Sequenz, 9: Gültigkeitsdatum, 10: Verpackung, 11: Packungsgrösse
-					// 12: Einheit, 13: Abgabekategorie, 14: Wirkstoff, 15: Zusammensetzung, 16: Anwendungsgebiet Präparat, 17: Anwendungsgebiet Sequenz
+					// 7: Erstzulassung Prï¿½parat, 8: Zulassungsdatum Sequenz, 9: Gï¿½ltigkeitsdatum, 10: Verpackung, 11: Packungsgrï¿½sse
+					// 12: Einheit, 13: Abgabekategorie, 14: Wirkstoff, 15: Zusammensetzung, 16: Anwendungsgebiet Prï¿½parat, 17: Anwendungsgebiet Sequenz
 	
 					if (row.getCell(0)!=null) 
 						swissmedic_no5 = row.getCell(0).getStringCellValue();  	// Swissmedic registration number (5 digits)			
@@ -921,8 +935,8 @@ public class Aips2Xml {
 		xml_str = xml_str.replaceAll("<sub> </sub>", "");		
 		xml_str = xml_str.replaceAll("<p> <i>", "<p><i>");
 		xml_str = xml_str.replaceAll("</p> </td>", "</p></td>");
-		xml_str = xml_str.replaceAll("<p> </p>", "<p></p>");  // MUST be improved, the space is not a real space!!
-		xml_str = xml_str.replaceAll("·", "- ");
+		xml_str = xml_str.replaceAll("<p>ï¿½</p>", "<p></p>");  // MUST be improved, the space is not a real space!!
+		xml_str = xml_str.replaceAll("ï¿½", "- ");
 		xml_str = xml_str.replaceAll("<br />", "");
 		xml_str = xml_str.replaceAll("(?m)^[ \t]*\r?\n", "");
 
@@ -1021,7 +1035,6 @@ public class Aips2Xml {
             while ((line = br.readLine()) != null) {
                 file_str += (line + "\n");
             }
-            System.out.println(">> Success: Read file " + filename);
             br.close();
         }
         catch (Exception e) {
@@ -1031,9 +1044,12 @@ public class Aips2Xml {
 		return file_str;	
 	}
 	
-	static void writeToFile(String stringToWrite, String filename) {
+	static void writeToFile(String string_to_write, String dir_name, String file_name) {
         try {
-			File wfile = new File(filename);
+        	File wdir = new File(dir_name);
+        	if (!wdir.exists())
+        		wdir.mkdirs();
+			File wfile = new File(dir_name+file_name);
 			if (!wfile.exists())
 				wfile.createNewFile();
 			// FileWriter fw = new FileWriter(wfile.getAbsoluteFile());
@@ -1042,7 +1058,7 @@ public class Aips2Xml {
         	encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
 			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(wfile.getAbsoluteFile()), encoder);
 			BufferedWriter bw = new BufferedWriter(osw);      			
-			bw.write(stringToWrite);
+			bw.write(string_to_write);
 			bw.close();
  		} catch (IOException e) {
 			e.printStackTrace();
