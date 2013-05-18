@@ -42,7 +42,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 public class AllDown {
 	
-	public void downAipsXls(String file_medical_infos_xsd, String file_medical_infos_xml) {
+	public void downAipsXls(String file_medical_infos_xsd, String file_medical_infos_xml, boolean disp) {
 		// http://download.swissmedicinfo.ch/
 		// ja, ja
 		try {
@@ -50,7 +50,8 @@ public class AllDown {
 			java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF); 
 			// Start timer 
 			long startTime = System.currentTimeMillis();
-			System.out.print("- Downloading AIPS file ... ");		
+			if (disp)
+				System.out.print("- Downloading AIPS file ... ");		
 			
 			WebClient webClient = new WebClient();
 			HtmlPage currentPage = webClient.getPage("http://download.swissmedicinfo.ch/");
@@ -78,7 +79,7 @@ public class AllDown {
 				        FileUtils.copyFile(src, dst);
 						// Stop timer 
 						long stopTime = System.currentTimeMillis();				        
-						System.out.println(dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+						System.out.println("\r- Downloading AIPS file ... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 					} else if (file.endsWith(".xsd")) {
 				        File src = new File("./xml/tmp/unzipped_tmp/" + file);
 				        File dst = new File(file_medical_infos_xsd);

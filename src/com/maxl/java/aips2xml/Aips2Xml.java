@@ -265,7 +265,12 @@ public class Aips2Xml {
 	static void allDown() {
 		AllDown a = new AllDown();
 		
-		a.downAipsXls(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML);
+		ProgressBar pb = new ProgressBar();
+		pb.init("- Downloading AIPS file ... ");
+		pb.start();		
+		a.downAipsXls(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML, false);
+		pb.stopp();
+		
 		a.downPackungenXls(FILE_PACKAGES_XLS);
 		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
 		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
