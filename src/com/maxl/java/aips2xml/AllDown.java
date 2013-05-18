@@ -42,9 +42,11 @@ import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 
 public class AllDown {
 	
-	public void downAipsXls(String file_medical_infos_xsd, String file_medical_infos_xml, boolean disp) {
+	public void downAipsXls(String file_medical_infos_xsd, String file_medical_infos_xml) {
 		// http://download.swissmedicinfo.ch/
-		// ja, ja
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		
 		try {
 			// Suppress all warnings!
 			java.util.logging.Logger.getLogger("com.gargoylesoftware").setLevel(Level.OFF); 
@@ -52,18 +54,27 @@ public class AllDown {
 			long startTime = System.currentTimeMillis();
 			if (disp)
 				System.out.print("- Downloading AIPS file ... ");		
+			else {
+				pb.init("- Downloading AIPS file ... ");
+				pb.start();	
+			}
 			
 			WebClient webClient = new WebClient();
 			HtmlPage currentPage = webClient.getPage("http://download.swissmedicinfo.ch/");
-			// System.out.println(">>> " + currentPage.getWebResponse().getContentAsString());
 			HtmlSubmitInput acceptBtn = currentPage.getElementByName("ctl00$MainContent$btnOK");
 			currentPage = acceptBtn.click();
 			acceptBtn = currentPage.getElementByName("ctl00$MainContent$BtnYes");	
 
 			InputStream is = acceptBtn.click().getWebResponse().getContentAsStream();
+			
 			File destination = new File("./xml/tmp/aips.zip");
 			FileUtils.copyInputStreamToFile(is, destination);
+			
+			is.close();	
 			webClient.closeAllWindows();
+			
+			if (!disp)
+				pb.stopp();
 			
 			unzipToTemp(destination);
 			
@@ -96,26 +107,46 @@ public class AllDown {
 	}
 	
 	public void downPackungenXls(String file_packages_xls) {
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();
+		
 		try {
 			// Start timer 
-			long startTime = System.currentTimeMillis();			
-			System.out.print("- Downloading Packungen file ... ");	
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading Packungen file ... ");	
+			else {
+				pb.init("- Downloading Packungen file ... ");
+				pb.start();	
+			}
+				
 			URL url = new URL("http://www.swissmedic.ch/daten/00080/00251/index.html?lang=de&download=NHzLpZeg7t,lnp6I0NTU042l2Z6ln1acy4Zn4Z2qZpnO2Yuq2Z6gpJCDdH56fWym162epYbg2c_JjKbNoKSn6A--&.xls");
-			File destination = new File(file_packages_xls);
+			File destination = new File(file_packages_xls);			
 			FileUtils.copyURLToFile(url, destination);
-			long stopTime = System.currentTimeMillis();	
-			System.out.println(destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+
+			if (!disp)
+				pb.stopp();
+			long stopTime = System.currentTimeMillis();		
+			System.out.println("\r- Downloading Packungen file ... " + destination.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
 	}
 	
-	public void downSwissindexXml(String language, String file_refdata_pharma_xml) {	
-		// Start timer 
-		long startTime = System.currentTimeMillis();
-		System.out.print("- Downloading Swissindex (" + language + ") file ... ");			
+	public void downSwissindexXml(String language, String file_refdata_pharma_xml) {		
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();	
 		
 		try {
+			// Start timer 
+			long startTime = System.currentTimeMillis();
+			if (disp)
+				System.out.print("- Downloading Swissindex (" + language + ") file ... ");
+			else {
+				pb.init("- Downloading Swissindex (" + language + ") file ... ");
+				pb.start();
+			}
+			
 			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
 
 			// Setting SOAPAction header line
@@ -152,8 +183,11 @@ public class AllDown {
 			// Note: parsing the Document tree and using the removeAttribute function is hopeless! 
 			xmlBody = xmlBody.replaceAll("xmlns.*?\".*?\" ", "");			
 			long len = writeToFile(xmlBody, file_refdata_pharma_xml);
+			
+			if (!disp)
+				pb.stopp();
 			long stopTime = System.currentTimeMillis();	
-			System.out.println(len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+			System.out.println("\r- Downloading Swissindex (" + language + ") file ... " + len/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 			
 			connection.close();			
 			
@@ -164,10 +198,18 @@ public class AllDown {
 	
 	public void downPreparationsXml(String file_preparations_xml) {
 		// http://bag.e-mediat.net/SL2007.Web.External/File.axd?file=XMLPublications.zip
+		boolean disp = false;
+		ProgressBar pb = new ProgressBar();	
+		
 		try {
 			// Start timer 
 			long startTime = System.currentTimeMillis();
-			System.out.print("- Downloading Preparations file ... ");	
+			if (disp)
+				System.out.print("- Downloading Preparations file ... ");
+			else {
+				pb.init("- Downloading Preparations file ... ");
+				pb.start();
+			}
 			
 			URL url = new URL("http://bag.e-mediat.net/SL2007.Web.External/File.axd?file=XMLPublications.zip");
 			File destination = new File("./xml/tmp/preparations.zip");
@@ -179,8 +221,11 @@ public class AllDown {
 	        File src = new File("./xml/tmp/unzipped_tmp/Preparations.xml");
 	        File dst = new File(file_preparations_xml);
 	        FileUtils.copyFile(src, dst);
+	        
+	        if (!disp)
+	        	pb.stopp();
 	        long stopTime = System.currentTimeMillis();	
-	        System.out.println(dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
+	        System.out.println("\r- Downloading Preparations file ... " + dst.length()/1024 + " kB in " + (stopTime-startTime)/1000.0f + " sec");
 
 	        // Delete folder ./tmp
 	        FileUtils.deleteDirectory(new File("./xml/tmp"));	        

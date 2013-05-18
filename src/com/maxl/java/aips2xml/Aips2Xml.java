@@ -144,6 +144,7 @@ public class Aips2Xml {
 			if (cmd.hasOption("help")) {				
 				HelpFormatter formatter = new HelpFormatter();
 				formatter.printHelp("aips2xml", opts);
+				System.exit(0);
 			}
 			if (cmd.hasOption("version")) {
 				System.out.println("Version of aips2xml: " + VERSION);
@@ -264,13 +265,8 @@ public class Aips2Xml {
 	
 	static void allDown() {
 		AllDown a = new AllDown();
-		
-		ProgressBar pb = new ProgressBar();
-		pb.init("- Downloading AIPS file ... ");
-		pb.start();		
-		a.downAipsXls(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML, false);
-		pb.stopp();
-		
+			
+		a.downAipsXls(FILE_MEDICAL_INFOS_XSD, FILE_MEDICAL_INFOS_XML);		
 		a.downPackungenXls(FILE_PACKAGES_XLS);
 		a.downSwissindexXml("DE", FILE_REFDATA_PHARMA_DE_XML);
 		a.downSwissindexXml("FR", FILE_REFDATA_PHARMA_FR_XML);
