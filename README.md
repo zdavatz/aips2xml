@@ -3,6 +3,9 @@ aips2xml
 
 aips2xml - sanitize AIPS XML 
 
+##Requirements
+Java 1.7 (tested on Linux, Mac, Windows)
+
 ##Usage
 java -jar aips2xml.jar
 
@@ -27,3 +30,6 @@ usage: aips2xml
     --version       print the version information and exit
     --zip           generate zip file
 ```
+
+##Eclipse
+Eclipse Users can open the project on Eclipse and hack away and send us a patch.
