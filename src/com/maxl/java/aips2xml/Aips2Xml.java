@@ -941,8 +941,8 @@ public class Aips2Xml {
 		xml_str = xml_str.replaceAll("<sub> </sub>", "");		
 		xml_str = xml_str.replaceAll("<p> <i>", "<p><i>");
 		xml_str = xml_str.replaceAll("</p> </td>", "</p></td>");
-		xml_str = xml_str.replaceAll("<p>ï¿½</p>", "<p></p>");  // MUST be improved, the space is not a real space!!
-		xml_str = xml_str.replaceAll("ï¿½", "- ");
+		xml_str = xml_str.replaceAll("<p> </p>", "<p></p>");  // MUST be improved, the space is not a real space!!
+		xml_str = xml_str.replaceAll("·", "- ");
 		xml_str = xml_str.replaceAll("<br />", "");
 		xml_str = xml_str.replaceAll("(?m)^[ \t]*\r?\n", "");
 
