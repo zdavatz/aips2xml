@@ -67,6 +67,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -257,6 +258,21 @@ public class Aips2Xml {
 				writeToFile(fi_complete_xml, "./fis/", "fi_fr.xml");
 				if (ZIP_XML)
 					zipToFile("./fis/", "fi_fr.xml");				
+			}
+			
+			// Move stylesheet file to ./fis/ folders
+			try {
+				File src = new File("./css/amiko_stylesheet.css");
+				File dst_de = new File("./fis/fi_de_html/");
+				File dst_fr = new File("./fis/fi_fr_html/");			
+				if (src.exists() ) {
+					if (dst_de.exists())
+						FileUtils.copyFileToDirectory(src, dst_de);
+					if (dst_fr.exists())
+						FileUtils.copyFileToDirectory(src, dst_fr);
+				}
+			} catch(IOException e) {
+				// Unhandled!
 			}
 			
 			if (SHOW_LOGS) {
@@ -688,7 +704,7 @@ public class Aips2Xml {
 			for (int i=1; i<22; ++i) {
 				html_sanitized += html_utils.sanitizeSection(i, m.getTitle(), DB_LANGUAGE);
 			}
-			html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;						
+			html_sanitized = "<div id=\"monographie\">" + html_sanitized + "</div>" ;
 		} else {
 			html_sanitized = m.getContent();
 		}
@@ -696,8 +712,14 @@ public class Aips2Xml {
 		// Update "Packungen" section and extract therapeutisches index
 		List<String> mTyIndex_list = new ArrayList<String>();						
 		String mContent_str = updateSectionPackungen(m.getTitle(), package_info, regnr_str, html_sanitized, mTyIndex_list);
-		m.setContent(mContent_str);
-								
+		
+		// Add meta-tag and link
+		mContent_str = mContent_str.replaceAll("<head>", "<head>" +
+				"<link href=\"amiko_stylesheet.css\" rel=\"stylesheet\" type=\"text/css\"></>" +
+				"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">");
+
+		m.setContent(mContent_str);		
+		
 		// Fix problem with wrong div class in original Swissmedic file
 		if (DB_LANGUAGE.equals("de")) {
 			m.setStyle(m.getStyle().replaceAll("untertitel", "untertitle"));
@@ -996,7 +1018,6 @@ public class Aips2Xml {
 		return final_xml_str;
 	}
 
-	
 	static String prettyFormat(String input) {
 	    try {
 	        Source xmlInput = new StreamSource(new StringReader(input));

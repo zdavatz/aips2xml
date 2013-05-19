@@ -480,7 +480,7 @@ public class HtmlUtils {
 		String html_str = newDoc.html().replaceAll("&lt; ", "&lt;");
 		// Replaces all supscripted â in the main text with ®
 		html_str = html_str.replaceAll(">â</sup>", ">®</sup>");
-		
+
 		return html_str;
 	}
 }
