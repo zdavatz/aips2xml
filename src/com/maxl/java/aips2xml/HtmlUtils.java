@@ -259,8 +259,8 @@ public class HtmlUtils {
 				}									
 				
 				if (h.isEmpty()) {
-					elem_first = elem_first.nextElementSibling();		
 					while (h.isEmpty()) {				
+						elem_first = elem_first.nextElementSibling();						
 						h = elem_first.toString();
 						h = h.replaceAll("\\<p.*?\\>", "");
 						h = h.replaceAll("<\\/p\\>", "");

@@ -78,7 +78,7 @@ public class AllDown {
 			
 			unzipToTemp(destination);
 			
-	        // Copy file ./tmp/unzipped_preparations/Preparations.xml to ./xml/bag_preparations_xml.xml
+			// Copy file ./tmp/unzipped_preparations/Preparations.xml to ./xml/bag_preparations_xml.xml
 			File folder = new File("./xml/tmp/unzipped_tmp");
 			File[] listOfFiles = folder.listFiles();
 			for (int i=0; i<listOfFiles.length; ++i) {
@@ -150,8 +150,8 @@ public class AllDown {
 			SOAPMessage soapRequest = MessageFactory.newInstance().createMessage();
 
 			// Setting SOAPAction header line
-	        MimeHeaders headers = soapRequest.getMimeHeaders();
-	        headers.addHeader("SOAPAction", "http://swissindex.e-mediat.net/SwissindexPharma_out_V101/DownloadAll");	
+			MimeHeaders headers = soapRequest.getMimeHeaders();
+			headers.addHeader("SOAPAction", "http://swissindex.e-mediat.net/SwissindexPharma_out_V101/DownloadAll");	
 	        
 			SOAPPart soapPart = soapRequest.getSOAPPart();
 			SOAPEnvelope envelope = soapPart.getEnvelope();
