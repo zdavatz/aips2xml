@@ -12,6 +12,8 @@ java -jar aips2xml.jar
 ##Generate sanitized (German) HTML and XML files
 java -jar aips2xml.jar -lang=de
 
+ [ on a decent PC with 8 cores, i7 it will take about 27 minutes to sanitize ca. 3900 FIs ]
+
 dito French:
 java -jar aips2xml.jar -lang=fr
 
