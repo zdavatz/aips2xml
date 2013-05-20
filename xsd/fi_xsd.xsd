@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:element name="p">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="sub" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="sup" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="i" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="img" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="src" type="xs:string" />
+            <xs:attribute name="alt" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="b" nillable="true" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:simpleContent msdata:ColumnName="b_Text" msdata:Ordinal="0">
+              <xs:extension base="xs:string">
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sub" nillable="true">
+    <xs:complexType>
+      <xs:simpleContent msdata:ColumnName="sub_Text" msdata:Ordinal="0">
+        <xs:extension base="xs:string">
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="sup" nillable="true">
+    <xs:complexType>
+      <xs:simpleContent msdata:ColumnName="sup_Text" msdata:Ordinal="0">
+        <xs:extension base="xs:string">
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="i">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="i" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="sup" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="sub" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="kompendium">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="date" type="xs:string" minOccurs="0" />
+        <xs:element name="lang" type="xs:string" minOccurs="0" />
+        <xs:element name="fi" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="title" type="xs:string" minOccurs="0" />
+              <xs:element name="owner" type="xs:string" minOccurs="0" />
+              <xs:element name="swissmedicno5" type="xs:string" minOccurs="0" />
+              <xs:element name="characteristic" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="p" type="xs:string" minOccurs="0" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="paragraph" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="paragraphtitle" type="xs:string" minOccurs="0" />
+                    <xs:element ref="p" minOccurs="0" maxOccurs="unbounded" />
+                    <xs:element name="table" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="tbody" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="tr" minOccurs="0" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element name="td" minOccurs="0" maxOccurs="unbounded">
+                                        <xs:complexType>
+                                          <xs:sequence>
+                                            <xs:element ref="p" minOccurs="0" maxOccurs="unbounded" />
+                                          </xs:sequence>
+                                        </xs:complexType>
+                                      </xs:element>
+                                    </xs:sequence>
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="paragraphsubtitle" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:simpleContent msdata:ColumnName="paragraphsubtitle_Text" msdata:Ordinal="0">
+                          <xs:extension base="xs:string">
+                          </xs:extension>
+                        </xs:simpleContent>
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="box" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="paragraphsubtitle" type="xs:string" minOccurs="0" />
+                          <xs:element ref="i" minOccurs="0" maxOccurs="unbounded" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="p" />
+        <xs:element ref="sub" />
+        <xs:element ref="sup" />
+        <xs:element ref="i" />
+        <xs:element ref="kompendium" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
