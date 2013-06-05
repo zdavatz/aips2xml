@@ -33,5 +33,9 @@ usage: aips2xml
     --zip           generate zip file
 ```
 
+If you have problem with Out-Of-Memory Errors you can try:
+
+$ java -Xmx4096m -jar aips2xml.jar -lang=de
+
 ##Eclipse
 Eclipse Users can open the project on Eclipse and hack away and send us a patch.
