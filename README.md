@@ -3,13 +3,13 @@ aips2xml
 
 aips2xml - sanitize AIPS XML 
 
-##Requirements
+## Requirements
 Java 1.7 (tested on Linux, Mac, Windows)
 
-##Usage
+## Usage
 java -jar aips2xml.jar
 
-##Generate sanitized (German) HTML and XML files
+## Generate sanitized (German) HTML and XML files
 java -jar aips2xml.jar -lang=de
 
  [ on a decent PC with 8 cores, i7 it will take about 27 minutes to sanitize ca. 3900 FIs ]
@@ -19,7 +19,7 @@ java -jar aips2xml.jar -lang=fr
 
 All files can then be found in the "fis" Folder.
 
-##Help
+## Help
 ```
 java -jar aips2xml.jar --help
 usage: aips2xml
@@ -37,5 +37,5 @@ If you have problem with Out-Of-Memory Errors you can try:
 
 $ java -Xmx4096m -jar aips2xml.jar -lang=de
 
-##Eclipse
+## Eclipse
 Eclipse Users can open the project on Eclipse and hack away and send us a patch.
