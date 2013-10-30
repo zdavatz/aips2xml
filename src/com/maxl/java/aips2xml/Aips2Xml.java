@@ -70,6 +70,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -83,7 +84,7 @@ import org.xml.sax.SAXParseException;
 import com.maxl.java.aips2xml.Preparations.Preparation;
 
 public class Aips2Xml {
-
+	
 	// Set by command line options (default values)
 	private static String DB_LANGUAGE = "";
 	private static boolean SHOW_ERRORS = false;
@@ -294,6 +295,23 @@ public class Aips2Xml {
 		a.downPreparationsXml(FILE_PREPARATIONS_XML);
 	}
 	
+	// FIX: Cannot get a text value form a numeric cell
+	// ME
+	static String getAnyValue( Cell part ){
+		
+		if (part!=null) {
+		    switch (part.getCellType()) {
+		        case Cell.CELL_TYPE_BOOLEAN:   	return part.getBooleanCellValue() +"";
+		        case Cell.CELL_TYPE_NUMERIC:    return part.getNumericCellValue() +"";
+		        case Cell.CELL_TYPE_STRING:		return part.getStringCellValue() +"";
+		        case Cell.CELL_TYPE_BLANK:		return "BLANK";
+		        case Cell.CELL_TYPE_ERROR: 		return "ERROR";
+		        case Cell.CELL_TYPE_FORMULA: 	return "FORMEL";
+		    }
+		}
+		return "";
+	}
+	
 	static void extractPackageInfo() {		
 		try {			
 			long startTime = System.currentTimeMillis();			
@@ -332,24 +350,17 @@ public class Aips2Xml {
 					// 0: Zulassungsnnr, 1: Sequenz, 2: Sequenzname, 3: Zulassunginhaberin, 4: T-Nummer, 5: ATC-Code, 6: Heilmittelcode
 					// 7: Erstzulassung Prï¿½parat, 8: Zulassungsdatum Sequenz, 9: Gï¿½ltigkeitsdatum, 10: Verpackung, 11: Packungsgrï¿½sse
 					// 12: Einheit, 13: Abgabekategorie, 14: Wirkstoff, 15: Zusammensetzung, 16: Anwendungsgebiet Prï¿½parat, 17: Anwendungsgebiet Sequenz
-	
-					if (row.getCell(0)!=null) 
-						swissmedic_no5 = row.getCell(0).getStringCellValue();  	// Swissmedic registration number (5 digits)			
-					if (row.getCell(2)!=null) 
-						sequence_name = row.getCell(2).getStringCellValue();	// Sequence name
-					if (row.getCell(6)!=null) 
-						heilmittel_code = row.getCell(6).getStringCellValue();
-					if (row.getCell(11)!=null) 
-						package_size = row.getCell(11).getStringCellValue();
-					if (row.getCell(12)!=null) 
-						package_unit = row.getCell(12).getStringCellValue();
-					if (row.getCell(13)!=null) 
-						swissmedic_cat = row.getCell(13).getStringCellValue();
-					if (row.getCell(16)!=null)
-						application_area = row.getCell(16).getStringCellValue();
+								
+					swissmedic_no5 = getAnyValue( row.getCell(0) ); // Swissmedic registration number (5 digits)
+					sequence_name = getAnyValue( row.getCell(2) );	// Sequence name
+					heilmittel_code = getAnyValue( row.getCell(6) );
+					package_size = getAnyValue( row.getCell(11) );
+					package_unit = getAnyValue( row.getCell(12) );
+					swissmedic_cat = getAnyValue( row.getCell(13) );
+					application_area = getAnyValue( row.getCell(16) );
 					
 					if (row.getCell(10)!=null) {
-						package_id = row.getCell(10).getStringCellValue();
+						package_id = getAnyValue( row.getCell(10) );
 						swissmedic_no8 = swissmedic_no5 + package_id;
 						// Fill in row
 						ArrayList<String> pack = new ArrayList<String>();
@@ -964,7 +975,7 @@ public class Aips2Xml {
 		xml_str = xml_str.replaceAll("<p> <i>", "<p><i>");
 		xml_str = xml_str.replaceAll("</p> </td>", "</p></td>");
 		xml_str = xml_str.replaceAll("<p> </p>", "<p></p>");  // MUST be improved, the space is not a real space!!
-		xml_str = xml_str.replaceAll("·", "- ");
+		xml_str = xml_str.replaceAll("ï¿½", "- ");
 		xml_str = xml_str.replaceAll("<br />", "");
 		xml_str = xml_str.replaceAll("(?m)^[ \t]*\r?\n", "");
 
